@@ -15,26 +15,30 @@ export class Clock extends React.Component<Props, State> {
     clockName: 'Clock-0',
   };
 
-  timerId: number | undefined = undefined;
-
-  clockTimerId: number | undefined = undefined;
+  // Tipagem robusta para evitar erros de compilação em testes
+  timerId: ReturnType<typeof setInterval> | null = null;
+  clockTimerId: ReturnType<typeof setInterval> | null = null;
 
   componentDidMount(): void {
-    this.clockTimerId = window.setInterval(() => {
+    // Timer para atualizar o relógio a cada segundo
+    this.clockTimerId = setInterval(() => {
       // eslint-disable-next-line no-console
       console.log(this.state.today.toUTCString().slice(-12, -4));
 
       this.setState({ today: new Date() });
     }, 1000);
-    this.timerId = window.setInterval(() => {
+
+    // Timer para mudar o nome do relógio
+    this.timerId = setInterval(() => {
       this.setState({ clockName: this.props.getRandomName() });
     }, 3300);
   }
 
   componentDidUpdate(
-    prevProps: Readonly<Props>,
+    _prevProps: Readonly<Props>,
     prevState: Readonly<State>,
   ): void {
+    // Log apenas quando o nome mudar
     if (prevState.clockName !== this.state.clockName) {
       // eslint-disable-next-line no-console
       console.log(
@@ -44,8 +48,14 @@ export class Clock extends React.Component<Props, State> {
   }
 
   componentWillUnmount(): void {
-    window.clearInterval(this.timerId);
-    window.clearInterval(this.clockTimerId);
+    // Limpeza obrigatória dos intervalos
+    if (this.timerId) {
+      clearInterval(this.timerId);
+    }
+
+    if (this.clockTimerId) {
+      clearInterval(this.clockTimerId);
+    }
   }
 
   render() {
