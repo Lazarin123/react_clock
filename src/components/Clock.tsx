@@ -2,68 +2,54 @@ import React from 'react';
 
 type State = {
   today: Date;
-  clockName: string;
 };
 
 type Props = {
-  getRandomName: () => string;
+  name: string;
 };
 
 export class Clock extends React.Component<Props, State> {
   state: State = {
     today: new Date(),
-    clockName: 'Clock-0',
   };
 
-  // Tipagem robusta para evitar erros de compilação em testes
-  timerId: ReturnType<typeof setInterval> | null = null;
   clockTimerId: ReturnType<typeof setInterval> | null = null;
 
   componentDidMount(): void {
-    // Timer para atualizar o relógio a cada segundo
     this.clockTimerId = setInterval(() => {
+      const nextTime = new Date();
+      const timeString = nextTime.toUTCString().slice(-12, -4);
+
       // eslint-disable-next-line no-console
-      console.log(this.state.today.toUTCString().slice(-12, -4));
+      console.log(timeString); // Loga ANTES de atualizar o estado
 
-      this.setState({ today: new Date() });
+      this.setState({ today: nextTime });
     }, 1000);
-
-    // Timer para mudar o nome do relógio
-    this.timerId = setInterval(() => {
-      this.setState({ clockName: this.props.getRandomName() });
-    }, 3300);
   }
 
-  componentDidUpdate(
-    _prevProps: Readonly<Props>,
-    prevState: Readonly<State>,
-  ): void {
-    // Log apenas quando o nome mudar
-    if (prevState.clockName !== this.state.clockName) {
+  componentDidUpdate(prevProps: Readonly<Props>): void {
+    // Verifica mudança na prop 'name' em vez do state
+    if (prevProps.name !== this.props.name) {
       // eslint-disable-next-line no-console
-      console.log(
-        `Renamed from ${prevState.clockName} to ${this.state.clockName}`,
+      console.warn(
+        `Renamed from ${prevProps.name} to ${this.props.name}`,
       );
     }
   }
 
   componentWillUnmount(): void {
-    // Limpeza obrigatória dos intervalos
-    if (this.timerId) {
-      clearInterval(this.timerId);
-    }
-
     if (this.clockTimerId) {
       clearInterval(this.clockTimerId);
     }
   }
 
   render() {
-    const { clockName, today } = this.state;
+    const { today } = this.state;
+    const { name } = this.props;
 
     return (
       <div className="Clock">
-        <strong className="Clock__name">{clockName}</strong>
+        <strong className="Clock__name">{name}</strong>
 
         {' time is '}
 

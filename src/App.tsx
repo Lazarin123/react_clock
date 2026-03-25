@@ -10,43 +10,53 @@ function getRandomName(): string {
 
 type State = {
   hasClock: boolean;
+  clockName: string;
 };
 
 export class App extends React.Component<{}, State> {
   state: State = {
     hasClock: true,
+    clockName: 'Clock-0',
   };
 
-  handleRightClick: (event: MouseEvent) => void = (event: MouseEvent) => {
+  timerId: ReturnType<typeof setInterval> | null = null;
+
+  handleRightClick = (event: MouseEvent) => {
     event.preventDefault();
-    this.setState({
-      hasClock: false,
-    });
+    this.setState({ hasClock: false });
   };
 
-  handleLeftClick: () => void = () => {
-    this.setState({
-      hasClock: true,
-    });
+  handleLeftClick = () => {
+    this.setState({ hasClock: true });
   };
 
   componentDidMount() {
     document.addEventListener('click', this.handleLeftClick);
     document.addEventListener('contextmenu', this.handleRightClick);
+
+    // O timer do nome agora fica no App
+    this.timerId = setInterval(() => {
+      this.setState({ clockName: getRandomName() });
+    }, 3300);
   }
 
   componentWillUnmount() {
     document.removeEventListener('click', this.handleLeftClick);
     document.removeEventListener('contextmenu', this.handleRightClick);
+
+    if (this.timerId) {
+      clearInterval(this.timerId);
+    }
   }
 
   render() {
-    const { hasClock } = this.state;
+    const { hasClock, clockName } = this.state;
 
     return (
       <div className="App">
         <h1>React clock</h1>
-        {hasClock && <Clock getRandomName={getRandomName} />}
+        {/* Passando o nome via prop 'name' */}
+        {hasClock && <Clock name={clockName} />}
       </div>
     );
   }
